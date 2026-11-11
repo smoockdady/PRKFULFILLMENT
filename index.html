@@ -38,6 +38,8 @@
     padding: 14px;
     margin-bottom: 16px;
   }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+  .controls .field[hidden] { display: none; }
   .controls label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; }
   select {
     width: 100%;
@@ -64,7 +66,7 @@
   .scroll { overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; min-width: 520px; }
   th, td { padding: 11px 12px; text-align: center; border-bottom: 1px solid var(--line); white-space: nowrap; }
-  thead th { background: var(--head); color: var(--head-ink); font-weight: 700; }
+  thead th { background: var(--head); color: var(--head-ink); font-weight: 700; white-space: normal; }
   tbody tr:nth-child(even) td, tbody tr:nth-child(even) th { background: var(--stripe); }
   tbody th { text-align: left; font-weight: 600; }
   th:first-child, td:first-child { position: sticky; left: 0; z-index: 1; background: inherit; }
@@ -87,12 +89,18 @@
   <header>
     <h1>SIZE CHART</h1>
     <span class="brand">PERKING FULFILLMENT</span>
-    <p>Khách hàng vui lòng chọn "GIẢI ĐẤU" để xem bảng kích thước</p>
+    <p>Khách hàng vui lòng chọn "SẢN PHẨM" và "THƯƠNG HIỆU" để xem bảng kích thước</p>
   </header>
 
   <section class="controls">
-    <label for="league">Product</label>
-    <select id="league"></select>
+    <div class="field">
+      <label for="product">Product</label>
+      <select id="product"></select>
+    </div>
+    <div class="field" id="brandField">
+      <label for="brand">Brand</label>
+      <select id="brand"></select>
+    </div>
   </section>
 
   <nav class="tabs" id="tabs"></nav>
@@ -312,15 +320,264 @@ const LEAGUES = [
           { important: true, text: "We recommend customers order one size up for the best fit ✨" }
         ] }
     ]
+  },
+  /* ================= SHOES ================= */
+  {
+    id: "asics", name: "Asics",
+    charts: [
+      { tab: "Men", title: "Asics Men's Sizes", sizeLabel: "US",
+        sizes: ["4","4.5","5","5.5","6","6.5","7","7.5","8","8.5","9","9.5","10","10.5","11","11.5","12"],
+        rows: [
+          { name: "UK", values: ["3","3.5","4","4.5","5","5.5","6","6.5","7","7.5","8","8.5","9","9.5","10","10.5","11"] },
+          { name: "EU", values: ["36","37","37.5","38","39","39.5","40","40.5","41.5","42","42.5","43.5","44","44.5","45","46","46.5"] },
+          { name: "CM", values: ["22.5","23","23.5","24","24.5","25","","25.5","26","26.5","27","27.5","28","","28.5","29","29.5"] }
+        ] },
+      { tab: "Women", title: "Asics Women's Sizes", sizeLabel: "US",
+        sizes: ["5.5","6","6.5","7","7.5","8","8.5","9","9.5","10","10.5","11","11.5","12","","",""],
+        rows: [
+          { name: "UK", values: ["3.5","4","4.5","5","5.5","6","6.5","7","7.5","8","8.5","9","9.5","10","","",""] },
+          { name: "EU", values: ["36","37","37.5","38","39","39.5","40","40.5","41.5","42","42.5","43.5","44","44.5","45","46","46.5"] },
+          { name: "CM", values: ["22.5","23","23.5","24","24.5","25","","25.5","26","26.5","27","27.5","28","","28.5","29","29.5"] }
+        ] },
+      { tab: "Youth", title: "Asics Youth Sizes", sizeLabel: "US",
+        sizes: ["K10","K11","K12","K13","1","1.5","2","2.5","3","3.5","4","4.5","5","5.5","6","6.5","7"],
+        rows: [
+          { name: "EU", values: ["27","28.5","30","31.5","32.5","33","33.5","34.5","35","35.5","36","37","37.5","38","39","39.5","40"] },
+          { name: "CM", values: ["17","17.5","18.5","19.5","20","20.5","21","21.5","22","","22.5","23","23.5","24","24.5","25",""] }
+        ] }
+    ]
+  },
+  {
+    id: "balenciaga", name: "Balenciaga",
+    charts: [
+      { tab: "Men", title: "Balenciaga Men's Shoe Sizes",
+        columns: ["EUR","UK","USA","JP","Korea"],
+        data: [
+          ["39","5","6","26","255"], ["40","6","7","26.5","265"], ["41","7","8","27","270"],
+          ["42","8","9","27.5","275"], ["43","9","10","28.5","280"], ["44","10","11","29","285"],
+          ["45","11","12","29.5","290"], ["46","12","13","30.5","300"], ["47","13","14","31","305"]
+        ] },
+      { tab: "Women", title: "Balenciaga Women's Shoe Sizes",
+        columns: ["EUR","UK","USA","JP","Korea"],
+        data: [
+          ["34","1","4","22.5","220"], ["35","2","5","23","225"], ["36","3","6","24","235"],
+          ["37","4","7","24.5","240"], ["38","5","8","25","245"], ["39","6","9","26","255"],
+          ["40","7","10","26.5","260"], ["41","8","11","27","265"], ["42","9","12","28","275"]
+        ] }
+    ]
+  },
+  {
+    id: "crocs", name: "Crocs",
+    charts: [
+      { tab: "Adult", title: "Crocs Size Chart",
+        columns: ["EU","Length (inside) (mm)","Suitable leg length (mm)","US"],
+        data: [
+          ["36","223","218–220","6"], ["37","230","225–227","6.5 – 7"], ["38","236","231–233","7–7.5"],
+          ["39","243","238–240","8"], ["40","249","244–246","8.5–9"], ["41","256","251–253","9–9.5"],
+          ["42","262","257–259","10"], ["43","268","263–265","11"], ["44","275","270–272","12"],
+          ["45","282","277–279","13"], ["46","288","283–285","14"]
+        ],
+        notes: [
+          { important: true, text: "Men should choose 1 size larger" },
+          { important: true, text: "Women & children can choose the right size" }
+        ] },
+      { tab: "Kids", title: "Crocs Size Chart (Kids)",
+        columns: ["EU","Length (inside) (mm)","Length (inside) (Inch)","Suitable leg length (mm)","US"],
+        data: [
+          ["24","150","5.71–5.79\"","145–147","Kids 8"], ["26","162","6.18–6.26\"","157–159","Kids 9–10"],
+          ["28","175","6.69–6.77\"","170–172","Kids 11–12"], ["30","187","7.17–7.24\"","182–184","Kids 13–1"],
+          ["32","197","7.56–7.64\"","192–194","2"], ["34","209","8.03–8.11\"","204–206","3–3.5"]
+        ],
+        notes: [
+          { important: true, text: "Men should choose 1 size larger" },
+          { important: true, text: "Women & children can choose the right size" }
+        ] }
+    ]
+  },
+  {
+    id: "gucci", name: "Gucci",
+    charts: [
+      { tab: "Men", title: "Gucci Men's Shoe Size Conversion Chart",
+        columns: ["Gucci Size","US","UK/AU","EU (Recommended)","CM (Foot length)"],
+        data: [
+          ["6.5","7","6.5","40 1/2","25.5"], ["7","7.5","7","41","26"], ["7.5","8","7.5","41.5","26.5"],
+          ["8","8.5","8","42","27"], ["8.5","9","8.5","42 1/2","27.5"], ["9","9.5","9","43","28"],
+          ["9.5","10","9.5","43 1/2","28.5"], ["10","10.5","10","44","29"], ["10.5","11","10.5","44 1/2","29.5"],
+          ["11","11.5","11","45","30"], ["11.5","12","11.5","45 1/2","30.5"], ["12","12.5","12","46","31"]
+        ],
+        notes: [
+          { important: true, text: "Sizing note: Please choose your EU size based on your foot size. Manual measurement may differ from the size chart by 0.5–1 cm." }
+        ] },
+      { tab: "Women", title: "Gucci Women's Shoes Size Conversion Chart",
+        columns: ["EU (Recommended)","US","UK","France (FR)","Australia (AU)","Korea (KR) (mm)","China (CN) (cm)"],
+        data: [
+          ["34.5","4.5","1.5","35.5","4","215","21.5"], ["35","5","2","36","4.5","220","22.0"],
+          ["35.5","5.5","2.5","36.5","5","225","22.5"], ["36","6","3","37","5.5","230","23.0"],
+          ["36.5","6.5","3.5","37.5","6","235","23.5"], ["37","7","4","38","6.5","240","24.0"],
+          ["37.5","7.5","4.5","38.5","7","245","24.5"], ["38","8","5","39","7.5","250","25.0"],
+          ["38.5","8.5","5.5","39.5","8","255","25.5"], ["39","9","6","40","8.5","260","26.0"],
+          ["39.5","9.5","6.5","40.5","9","265","26.5"], ["40","10","7","41","9.5","270","27.0"],
+          ["40.5","10.5","7.5","41.5","10","275","27.5"], ["41","11","8","42","10.5","280","28.0"]
+        ],
+        notes: [
+          { important: true, text: "Sizing note: Please choose your size based on your foot length. Manual measurement may differ from the size chart by 0.5–1 cm." }
+        ] }
+    ]
+  },
+  {
+    id: "louis-vuitton", name: "Louis Vuitton",
+    charts: [
+      { tab: "Men", title: "Louis Vuitton Men's Shoes Size Chart",
+        columns: ["LV Size (UK)","US","UK","Canada","Brasil","China","Japan","Korea","Foot Length"],
+        data: [
+          ["4","5","4","5","33","38","23.5","230","23 cm"],
+          ["4.5","5.5","4.5","5.5","33.5","38.5","24","235","24 cm"],
+          ["5","6","5","6","34","39","24.5","240","24 cm"],
+          ["5.5","6.5","5.5","6.5","34.5","39.5","25","245","25 cm"],
+          ["6","7","6","7","35","40","25","250","25 cm"],
+          ["6.5","7.5","6.5","7.5","35.5","40.5","25.5","255","25 cm"],
+          ["7","8","7","8","36","41","26","260","26 cm"],
+          ["7.5","8.5","7.5","8.5","36.5","41.5","26","265","26 cm"],
+          ["8","9","8","9","37","42","26.5","270","27 cm"],
+          ["8.5","9.5","8.5","9.5","37.5","42.5","27","275","27 cm"],
+          ["9","10","9","10","38","43","27.5","280","28 cm"],
+          ["9.5","10.5","9.5","10.5","38.5","43.5","28","285","28 cm"],
+          ["10","11","10","11","39","44","28.5","290","28 cm"],
+          ["10.5","11.5","10.5","11.5","39.5","44.5","29","295","29 cm"],
+          ["11","12","11","12","40","45","29.5","300","29 cm"],
+          ["11.5","12.5","11.5","12.5","40.5","45.5","30","305","30 cm"],
+          ["12","13","12","13","41","46","30.5","310","30 cm"],
+          ["12.5","13.5","12.5","13.5","41.5","46.5","30.5","315","31 cm"],
+          ["13","14","13","14","42","47","31","320","31 cm"],
+          ["13.5","14.5","13.5","14.5","42.5","47.5","31.5","325","31 cm"],
+          ["14","15","14","15","43","48","32","330","32 cm"]
+        ] }
+    ]
+  },
+  {
+    id: "new-balance", name: "New Balance",
+    charts: [
+      { tab: "Men", title: "New Balance Men's Size Chart", sizeLabel: "CM",
+        sizes: ["22","22.5","23","23.5","24","24.5","25","25.5","26","26.5","27","27.5","28","28.5","29"],
+        rows: [
+          { name: "EUR", values: ["36","37","37.5","38","38.5","39.5","40","40.5","41.5","42","42.5","43","44","44.5","45"] },
+          { name: "US",  values: ["4","4.5","5","5.5","6","6.5","7","7.5","8","8.5","9","9.5","10","10.5","11"] },
+          { name: "UK",  values: ["3.5","4","4.5","5","5.5","6","6.5","7","7.5","8","8.5","9","9.5","10","10.5"] }
+        ] },
+      { tab: "Women", title: "New Balance Women's Size Chart", sizeLabel: "CM",
+        sizes: ["22","22.5","23","23.5","24","24.5","25","25.5","26","26.5","27"],
+        rows: [
+          { name: "EUR", values: ["35","36","36.5","37","37.5","38","39","40","40.5","41","41.5"] },
+          { name: "US",  values: ["5","5.5","6","6.5","7","7.5","8","8.5","9","9.5","10"] },
+          { name: "UK",  values: ["3","3.5","4","4.5","5","5.5","6","6.5","7","7.5","8"] }
+        ] },
+      { tab: "Big Kids", title: "New Balance Big Kids Size Chart", sizeLabel: "CM",
+        sizes: ["16.5","17","17.5","17.5","18","18.5","19","19","19.5","20","20.5","21","21.5","22","22.5","23","23.5"],
+        rows: [
+          { name: "EUR", values: ["28","28.5","29","30","30.5","31","32","32.5","33","33.5","34.5","35","35.5","36","37","37.5","38"] },
+          { name: "US",  values: ["10.5","11","11.5","12","12.5","13","13.5","1","1.5","2","2.5","3","3.5","4","4.5","5","5.5"] },
+          { name: "UK",  values: ["10","10.5","11","11.5","12","12.5","13","13.5","1","1.5","2","2.5","3","3.5","4","4.5","5"] }
+        ] }
+    ]
+  },
+  {
+    id: "nike", name: "Nike",
+    charts: [
+      { tab: "Men", title: "Nike Men's Shoe Size Chart", sizeLabel: "US",
+        sizes: ["6","6.5","7","7.5","8","8.5","9","9.5","10","10.5","11","11.5","12"],
+        rows: [
+          { name: "UK",  values: ["5","5.5","6","6.5","7","7.5","8","8.5","9","9.5","10","10.5","11"] },
+          { name: "EUR", values: ["38.5","39","40","40.5","41","42","42.5","43","44","44.5","45","45.5","46"] },
+          { name: "CM",  values: ["24","24.5","25","25.5","26","26.5","27","27.5","28","28.5","29","29.5","30"] }
+        ] },
+      { tab: "Women", title: "Nike Women's Shoe Size Chart", sizeLabel: "US",
+        sizes: ["4.5","5","5.5","6","6.5","7","7.5","8","8.5","9","9.5","10","10.5"],
+        rows: [
+          { name: "UK",  values: ["2","2.5","3","3.5","4","4.5","5","5.5","6","6.5","7","7.5","8"] },
+          { name: "EUR", values: ["35","35.5","36","36.5","37.5","38","38.5","39","40","40.5","41","42","42.5"] },
+          { name: "CM",  values: ["22","22","22.5","23","23.5","24","24.5","25","25.5","26","26.5","27","27.5"] }
+        ] },
+      { tab: "Youth", title: "Nike Kids' Shoe Size Chart",
+        columns: ["EUR","US","Suggested foot length (mm)"],
+        data: [
+          ["17","2C","80"], ["18","2.5C","85"], ["18.5","3C","90"], ["19","3.5C","95"], ["19.5","4C","100"],
+          ["20","4.5C","105"], ["21","5C","110"], ["21.5","5.5C","115"], ["22","6C","120"], ["22.5","6.5C","125"],
+          ["23.5","7C","130"], ["24","7.5C","135"], ["25","8C","140"], ["25.5","8.5C","145"], ["26","9C","150"],
+          ["26.5","9.5C","155"], ["27","10C","160"], ["27.5","10.5C","165"], ["28","11C","170"],
+          ["28.5","11.5C","175"], ["29.5","12C","180"], ["30","12.5C","185"], ["31","13C","190"], ["31.5","13.5C","195"],
+          ["32","1Y","200"], ["33","1.5Y","205"], ["33.5","2Y","210"], ["34","2.5Y","215"], ["35","3Y","220"],
+          ["35.5","3.5Y","225"], ["36","4Y","230"], ["36.5","4.5Y","235"], ["37.5","5Y","235"], ["38","5.5Y","240"],
+          ["38.5","6Y","240"], ["39","6.5Y","245"], ["40","7Y","250"]
+        ] }
+    ]
+  },
+  {
+    id: "ugg", name: "UGG",
+    charts: [
+      { tab: "Men", title: "UGG Men's Size Chart",
+        columns: ["US Men's","Heel to Toe (IN)","UK","EU","Japan (CM)","Mexico (CM)","China (MM)"],
+        data: [
+          ["3","8.3","2","36","21","21","210"], ["4","8.7","3","37","22","22","220"],
+          ["4.5","8.9","3.5","37.5","22.5","22.5","225"], ["5","9.1","4","38","23","23","230"],
+          ["5.5","9.3","4.5","38.5","23.5","23.5","235"], ["6","9.4","5","39","24","24","240"],
+          ["6.5","9.6","5.5","39.5","24.5","24.5","245"], ["7","9.8","6","40","25","25","250"],
+          ["7.5","10.0","6.5","40.5","25.5","25.5","255"], ["8","10.2","7","41","26","26","260"],
+          ["8.5","10.4","7.5","41.5","26.5","26.5","265"], ["9","10.6","8","42","27","27","270"],
+          ["9.5","10.8","8.5","42.5","27.5","27.5","275"], ["10","11.0","9","43","28","28","280"],
+          ["10.5","11.2","9.5","43.5","28.5","28.5","285"], ["11","11.4","10","44","29","29","290"],
+          ["11.5","11.6","10.5","44.5","29.5","29.5","295"], ["12","11.8","11","45","30","30","300"],
+          ["13","12.2","12","46","31","31","310"], ["14","12.6","13","48.5","32","32","320"],
+          ["15","13.0","14","49.5","33","33","330"]
+        ] }
+    ]
+  },
+  /* ================= JEWELRY ================= */
+  {
+    id: "jewelry", name: "Jewelry",
+    charts: [
+      { tab: "Bracelet", title: "Bracelet Size Chart",
+        columns: ["Wrist size (CM)","Wrist size (Inches)","Love","Love (Open model)","Juste un Clou and other collections","Trinity","Ecrou de Cartier"],
+        data: [
+          ["13-13.9","5.1-5.4","15","16","14","16","15"],
+          ["14-14.9","5.5-5.8","16","17","15","17","16"],
+          ["15-15.9","5.9-6.2","17","18","16","18","17"],
+          ["16-16.9","6.3-6.6","18","19","17","19","18"],
+          ["17-17.9","6.7-7.0","19","20","18","20","19"],
+          ["18-18.9","7.1-7.4","20","","19","","20"]
+        ],
+        notes: [
+          { text: "The above recommendation covers all model variations: different gold type, width, paving or finishing" },
+          { text: "The above size chart is for recommendation only" }
+        ] }
+    ]
   }
+];
+
+/* PRODUCT -> BRAND structure. brands = ids from LEAGUES above (in display order).
+   A product with only one brand hides the Brand selector. */
+const PRODUCTS = [
+  { id: "jersey",  name: "Jersey",  brands: ["nfl","nhl","mlb","nba"] },
+  { id: "hoodie",  name: "Hoodie",  brands: ["nfl-hoodie"] },
+  { id: "shorts",  name: "Shorts",  brands: ["shorts"] },
+  { id: "cap",     name: "Cap",     brands: ["cap"] },
+  { id: "shoes",   name: "Shoes",   brands: ["asics","balenciaga","crocs","gucci","louis-vuitton","new-balance","nike","ugg"] },
+  { id: "jewelry", name: "Jewelry", brands: ["jewelry"] }
 ];
 
 /* ---------- render ---------- */
 const $ = id => document.getElementById(id);
-const state = { league: LEAGUES[0].id, tab: 0 };
+const byId = id => LEAGUES.find(l => l.id === id);
+const state = { product: PRODUCTS[0].id, brand: PRODUCTS[0].brands[0], tab: 0 };
+
+function fillBrands() {
+  const P = PRODUCTS.find(p => p.id === state.product);
+  $("brand").innerHTML = P.brands.map(id => `<option value="${id}">${byId(id).name}</option>`).join("");
+  $("brand").value = state.brand;
+  $("brandField").hidden = P.brands.length < 2;
+}
 
 function render() {
-  const L = LEAGUES.find(l => l.id === state.league);
+  const L = byId(state.brand);
   const C = L.charts[state.tab] || L.charts[0];
 
   $("tabs").innerHTML = L.charts.length > 1
@@ -328,11 +585,18 @@ function render() {
     : "";
   $("title").textContent = C.title;
 
-  let html = "<thead><tr><th>Size</th>" + C.sizes.map(s => `<th>${s}</th>`).join("") + "</tr></thead><tbody>";
-  C.rows.forEach(r => {
-    html += `<tr><th>${r.name}${r.unit ? ` <small>(${r.unit})</small>` : ""}</th>`;
-    html += r.values.map(v => `<td>${v}</td>`).join("") + "</tr>";
-  });
+  let html;
+  if (C.columns) {
+    /* grid layout: same orientation as the source image */
+    html = "<thead><tr>" + C.columns.map(c => `<th>${c}</th>`).join("") + "</tr></thead><tbody>";
+    C.data.forEach(row => { html += "<tr>" + row.map((v, i) => i === 0 ? `<th>${v}</th>` : `<td>${v}</td>`).join("") + "</tr>"; });
+  } else {
+    html = `<thead><tr><th>${C.sizeLabel || "Size"}</th>` + C.sizes.map(s => `<th>${s}</th>`).join("") + "</tr></thead><tbody>";
+    C.rows.forEach(r => {
+      html += `<tr><th>${r.name}${r.unit ? ` <small>(${r.unit})</small>` : ""}</th>`;
+      html += r.values.map(v => `<td>${v}</td>`).join("") + "</tr>";
+    });
+  }
   $("table").innerHTML = html + "</tbody>";
 
   const notes = C.notes || [];
@@ -341,10 +605,16 @@ function render() {
     : "";
 }
 
-$("league").innerHTML = LEAGUES.map(l => `<option value="${l.id}">${l.name}</option>`).join("");
-$("league").addEventListener("change", e => { state.league = e.target.value; state.tab = 0; render(); });
+$("product").innerHTML = PRODUCTS.map(p => `<option value="${p.id}">${p.name}</option>`).join("");
+$("product").addEventListener("change", e => {
+  state.product = e.target.value;
+  state.brand = PRODUCTS.find(p => p.id === state.product).brands[0];
+  state.tab = 0; fillBrands(); render();
+});
+$("brand").addEventListener("change", e => { state.brand = e.target.value; state.tab = 0; render(); });
 $("tabs").addEventListener("click", e => { const b = e.target.closest("button"); if (b) { state.tab = +b.dataset.i; render(); } });
 
+fillBrands();
 render();
 </script>
 </body>
