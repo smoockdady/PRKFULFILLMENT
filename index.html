@@ -15,8 +15,6 @@
     --head-ink: #ffffff;
     --stripe: #f8f9fb;
     --accent: #c8102e;
-    --hit: #fff4d6;
-    --hit-line: #f0b429;
     --radius: 12px;
   }
   * { box-sizing: border-box; }
@@ -35,7 +33,7 @@
 
   .controls {
     display: grid;
-    grid-template-columns: 1fr 1.4fr auto;
+    grid-template-columns: 1fr auto;
     gap: 12px;
     background: var(--card);
     border: 1px solid var(--line);
@@ -44,7 +42,7 @@
     margin-bottom: 16px;
   }
   .field label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; }
-  select, input[type="search"] {
+  select {
     width: 100%;
     height: 42px;
     padding: 0 12px;
@@ -54,7 +52,7 @@
     background: #fff;
     color: var(--ink);
   }
-  select:focus, input:focus { outline: 2px solid var(--ink); outline-offset: -1px; }
+  select:focus { outline: 2px solid var(--ink); outline-offset: -1px; }
 
   .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; height: 42px; }
   .seg button {
@@ -85,14 +83,7 @@
   tbody th:first-child { background: var(--card); }
   tbody th small { color: var(--muted); font-weight: 400; }
 
-  .hit { background: var(--hit) !important; color: var(--ink) !important; box-shadow: inset 2px 0 0 var(--hit-line), inset -2px 0 0 var(--hit-line); }
-  thead th.hit { background: var(--hit-line) !important; }
-  .dim { opacity: .35; }
-
-  .msg { padding: 10px 16px; font-size: 14px; border-bottom: 1px solid var(--line); display: none; }
-  .msg.show { display: block; }
-  .msg.ok { background: #ecfdf3; color: #05603a; }
-  .msg.warn { background: #fef3f2; color: #b42318; }
+  .hidden { display: none !important; }
 
   .notes { padding: 12px 16px; font-size: 13px; color: var(--muted); }
   .notes ul { margin: 0; padding-left: 18px; }
@@ -112,7 +103,7 @@
 <div class="wrap">
   <header>
     <h1>SIZE CHART <span>PERKING FULFILLMENT</span></h1>
-    <p>Select a league, then search your size in US or EU format.</p>
+    <p>Select a league to view its size chart.</p>
   </header>
 
   <section class="controls">
@@ -120,11 +111,7 @@
       <label for="league">League</label>
       <select id="league"></select>
     </div>
-    <div class="field">
-      <label for="q">Search size (US / EU)</label>
-      <input id="q" type="search" placeholder="e.g. M, XL, 2XL, 50, 52, 7 1/4, 58…" autocomplete="off">
-    </div>
-    <div class="field">
+    <div class="field" id="unitField">
       <label>Unit</label>
       <div class="seg" id="unit">
         <button type="button" data-u="in">US (inch)</button>
@@ -137,41 +124,42 @@
 
   <section class="card">
     <h2 id="title"></h2>
-    <div class="msg" id="msg"></div>
     <div class="scroll"><table id="table"></table></div>
     <div class="notes" id="notes"></div>
   </section>
 
-  <footer>Measurements are taken with the garment laid flat. Allow ±1–2 cm (±0.5 in) tolerance due to manual measurement.</footer>
 </div>
 
 <script>
 /*
- * DATA
- * Each chart: sizes = [{us, eu}], rows = [{name, cm:[...]} or {name, in:[...]}]
- * A value can be a number or a range [min, max]. Missing unit is converted automatically.
+ * DATA — numbers are copied exactly from the supplier charts (no rounding).
+ * Each chart: sizes = [{us, eu?, age?}], rows = [{name, cm:[...]} and/or {name, in:[...]}]
+ * A value can be a number or a range [min, max].
+ * If a row only has one unit, the other unit is converted (1 in = 2.54 cm).
+ * showBoth: true  -> always show cm and inch rows (unit toggle hidden).
+ * notes: the note printed under that chart (keep the supplier's note text here).
  * To add a new league: add one more entry to LEAGUES.
  */
 const LEAGUES = [
   {
     id: "nfl", name: "NFL",
     charts: [
-      { tab: "Men", title: "NFL Men's Jersey",
+      { tab: "Men", title: "NFL Men's Size Chart",
         sizes: ["S","M","L","XL","2XL","3XL"].map(s => ({ us: s })),
         rows: [
-          { name: "Chest Width (1/2)", key: "chest", in: [21.3,22.4,23.6,24.4,25.6,27.6], cm: [54,57,60,62,65,70] },
+          { name: "Chest Width", in: [21.3,22.4,23.6,24.4,25.6,27.6], cm: [54,57,60,62,65,70] },
           { name: "Length", in: [29.1,30.7,31.5,32.7,33.9,35.4], cm: [74,78,80,83,86,90] }
         ] },
-      { tab: "Women", title: "NFL Women's Jersey",
+      { tab: "Women", title: "NFL Women's Size Chart",
         sizes: ["S","M","L","XL","XXL"].map(s => ({ us: s })),
         rows: [
-          { name: "Chest Width (1/2)", key: "chest", in: [16.5,17.7,18.9,20.1,20.9], cm: [42,45,48,51,53] },
+          { name: "Chest Width", in: [16.5,17.7,18.9,20.1,20.9], cm: [42,45,48,51,53] },
           { name: "Length", in: [24.8,25.6,26.8,27.6,28.3], cm: [63,65,68,70,72] }
         ] },
-      { tab: "Youth", title: "NFL Youth Jersey",
+      { tab: "Youth", title: "NFL Youth's Size Chart",
         sizes: ["YTH S","YTH M","YTH L","YTH XL"].map(s => ({ us: s })),
         rows: [
-          { name: "Chest Width (1/2)", key: "chest", in: [16.9,18.1,19.3,20.5], cm: [43,46,49,52] },
+          { name: "Chest Width", in: [16.9,18.1,19.3,20.5], cm: [43,46,49,52] },
           { name: "Length", in: [24.8,25.6,26.8,28], cm: [63,65,68,71] }
         ] }
     ]
@@ -179,28 +167,28 @@ const LEAGUES = [
   {
     id: "nhl", name: "NHL",
     charts: [
-      { tab: "Men", title: "NHL Men's Jersey",
+      { tab: "Men", title: "NHL New Adidas Men's Size Chart",
         sizes: [{us:"S",eu:"46"},{us:"M",eu:"50"},{us:"L",eu:"52"},{us:"XL",eu:"54"},{us:"XXL",eu:"56"},{us:"XXXL",eu:"60"}],
         rows: [
           { name: "Length", cm: [77,79,81,83,85,87] },
           { name: "Shoulder Width", cm: [49,51,51,52,52,53] },
-          { name: "Chest Width (1/2)", key: "chest", cm: [56,59,62,65,68,71] },
+          { name: "1/2 Chest Circumference", cm: [56,59,62,65,68,71] },
           { name: "Sleeve Length", cm: [84,85,87,88,89,90] }
         ] },
-      { tab: "Women", title: "NHL Women's Jersey",
+      { tab: "Women", title: "NHL New Adidas Women's Size Chart",
         sizes: ["S","M","L","XL"].map(s => ({ us: s })),
         rows: [
           { name: "Length", cm: [74,76,78,80] },
           { name: "Shoulder Width", cm: [45,47,49,51] },
-          { name: "Chest (full circumference)", key: "chest", cm: [90,95,100,107] },
+          { name: "Full Chest Circumference", cm: [90,95,100,107] },
           { name: "Sleeve Length", cm: [55,56,57,58] }
         ] },
-      { tab: "Kids", title: "NHL Kids Jersey",
+      { tab: "Kids", title: "NHL New Adidas Kids Size Chart",
         sizes: [{us:"S/M"},{us:"L/XL"}],
         rows: [
           { name: "Length", cm: [60,67] },
           { name: "Shoulder Width", cm: [43,48] },
-          { name: "Chest (full circumference)", key: "chest", cm: [91,101] },
+          { name: "Full Chest Circumference", cm: [91,101] },
           { name: "Sleeve Length", cm: [50,57] }
         ] }
     ]
@@ -208,24 +196,24 @@ const LEAGUES = [
   {
     id: "mlb", name: "MLB",
     charts: [
-      { tab: "Men", title: "MLB Men's Baseball Jersey",
+      { tab: "Men", title: "Men's Baseball Jersey Sizing",
         sizes: [{us:"M",eu:"48"},{us:"L",eu:"50"},{us:"XL",eu:"52"},{us:"XXL",eu:"54"},{us:"XXXL",eu:"56"}],
         rows: [
-          { name: "Chest", key: "chest", in: [44,47.25,51,55,59], cm: [111.3,119.5,129,139.2,149.3] },
-          { name: "Back Length", in: [31,31.625,32.5,33.25,34], cm: [78.4,80,82.2,84.1,86] }
+          { name: "Chest", in: [44,"47 1/4",51,55,59], cm: [111.32,119.5425,129.03,139.15,149.27] },
+          { name: "Back Length", in: [31,"31 5/8","32 1/2","33 1/4",34], cm: [78.43,80.01125,82.225,84.1225,86.02] }
         ] },
-      { tab: "Women", title: "MLB Women's Baseball Jersey",
+      { tab: "Women", title: "Women Baseball Sizing Chart",
         sizes: ["S","M","L","XL"].map(s => ({ us: s })),
         rows: [
-          { name: "Chest", key: "chest", in: [[34,35],[36,37],[38,40],[41.5,43.5]] },
+          { name: "Chest", in: [[34,35],[36,37],[38,40],[41.5,43.5]] },
           { name: "Waist", in: [[26,27],[28,29],[30,32],[33.5,35.5]] },
           { name: "Hip", in: [[36.5,37.5],[38.5,39.5],[40.5,42.5],[44,46]] },
-          { name: "Sleeve", in: [30,30.75,31.5,32] }
+          { name: "Sleeve", in: [30,"30 3/4",31.5,32] }
         ] },
-      { tab: "Youth", title: "MLB Youth Baseball Jersey",
+      { tab: "Youth", title: "Youth Baseball Sizing Chart",
         sizes: [{us:"S",age:"6-8"},{us:"M",age:"10-12"},{us:"L",age:"14-16"},{us:"XL",age:"16-18"}],
         rows: [
-          { name: "Chest", key: "chest", in: [[32,33],[34,35],[36,37],[38,40]] },
+          { name: "Chest", in: [[32,33],[34,35],[36,37],[38,40]] },
           { name: "Waist", in: [[24,25],[26,27],[28,29],[30,32]] }
         ] }
     ]
@@ -233,131 +221,86 @@ const LEAGUES = [
   {
     id: "cap", name: "Cap",
     charts: [
-      { tab: "Fitted Cap", title: "Fitted Cap — Head Circumference",
-        sizes: [
-          {us:"6 7/8",eu:"55"},{us:"7",eu:"56"},{us:"7 1/8",eu:"57"},{us:"7 1/4",eu:"58"},{us:"7 3/8",eu:"59"},
-          {us:"7 1/2",eu:"60"},{us:"7 5/8",eu:"61"},{us:"7 3/4",eu:"62"},{us:"7 7/8",eu:"63"},{us:"8",eu:"64"}
-        ],
+      { tab: "Cap", title: "Size Chart Cap",
+        showBoth: true,
+        sizes: ["6 7/8","7","7 1/8","7 1/4","7 3/8","7 1/2","7 5/8","7 3/4","7 7/8","8"].map(s => ({ us: s })),
         rows: [
-          { name: "Head Circumference", key: "chest", cm: [54.9,55.8,56.8,57.7,58.7,59.6,60.6,61.5,63,64] }
+          { name: "Circumference", cm: [54.9,55.8,56.8,57.7,58.7,59.6,60.6,61.5,63,64] }
         ],
         notes: [
-          { important: true, text: "Actual production size runs 2–3 cm smaller than the standard size. We recommend ordering ONE SIZE UP for the best fit." },
-          { text: "Measure around your head, about 1 cm above the eyebrows and ears." }
+          { important: true, text: "The actual production size runs 2-3 cm smaller than the standard size." },
+          { important: true, text: "We recommend customers order one size up for the best fit ✨" }
         ] }
     ]
   }
 ];
 
+/* Shown under a chart only when that chart has no notes of its own. */
 const DEFAULT_NOTES = [
-  { text: "Chest Width (1/2) = measured flat from armpit to armpit. Full circumference ≈ 2 × chest width." },
-  { text: "If you are between two sizes, choose the larger size." }
+  { text: "Measurements are taken with the garment laid flat." }
 ];
 
 /* ---------- helpers ---------- */
 const $ = id => document.getElementById(id);
 const IN = 2.54;
-const state = { league: LEAGUES[0].id, tab: 0, unit: "in", q: "" };
+const state = { league: LEAGUES[0].id, tab: 0, unit: "in" };
 
 try {
   const saved = JSON.parse(localStorage.getItem("prk-size-chart") || "{}");
   if (saved.unit === "cm" || saved.unit === "in") state.unit = saved.unit;
 } catch (e) {}
 
-function fmt(n) { return (Math.round(n * 10) / 10).toString(); }
+/* "47 1/4" -> 47.25 (only used when converting) */
+function num(v) {
+  if (typeof v === "number") return v;
+  const m = String(v).match(/^(\d+)\s+(\d+)\/(\d+)$/);
+  return m ? +m[1] + m[2] / m[3] : +v;
+}
+/* converted values only: 2 decimals, trailing zeros removed */
+const conv = n => (Math.round(n * 100) / 100).toString();
 
+/* returns display text; source values are shown exactly as given */
 function cell(row, i, unit) {
-  let v = row[unit] ? row[unit][i] : null;
-  if (v == null) {
-    const src = row.cm ? "cm" : "in";
-    const raw = row[src][i];
-    const f = src === "cm" ? (x => x / IN) : (x => x * IN);
-    v = Array.isArray(raw) ? raw.map(f) : f(raw);
+  if (row[unit]) {
+    const v = row[unit][i];
+    return Array.isArray(v) ? v[0] + " – " + v[1] : String(v);
   }
-  return v;
-}
-const show = v => Array.isArray(v) ? fmt(v[0]) + " – " + fmt(v[1]) : fmt(v);
-const mid  = v => Array.isArray(v) ? (v[0] + v[1]) / 2 : v;
-
-/* normalize size text: "2XL" == "XXL", "7 1/4" == "7.25" */
-function norm(s) {
-  s = String(s).toUpperCase().replace(/\s+/g, "").replace(/^YTH|^YOUTH/, "");
-  const m = s.match(/^(\d+)?(\d)\/(\d)$/);
-  if (m) return String((+m[1] || 0) + (+m[2] / +m[3]));
-  if (/^\d+(\.\d+)?$/.test(s)) return String(+s);
-  s = s.replace(/^(\d)XL$/, (_, n) => "X".repeat(+n) + "L");
-  return s;
-}
-function sizeKeys(sz) {
-  const keys = [norm(sz.us)];
-  if (sz.eu) keys.push(norm(sz.eu));
-  sz.us.split("/").forEach(p => keys.push(norm(p)));
-  return keys;
+  const src = row.cm ? "cm" : "in";
+  const f = src === "cm" ? (x => num(x) / IN) : (x => num(x) * IN);
+  const v = row[src][i];
+  return Array.isArray(v) ? conv(f(v[0])) + " – " + conv(f(v[1])) : conv(f(v));
 }
 
 /* ---------- render ---------- */
-function league() { return LEAGUES.find(l => l.id === state.league); }
-
 function render() {
-  const L = league();
+  const L = LEAGUES.find(l => l.id === state.league);
   const C = L.charts[state.tab] || L.charts[0];
 
   $("tabs").innerHTML = L.charts.length > 1
     ? L.charts.map((c, i) => `<button type="button" data-i="${i}" class="${i === state.tab ? "on" : ""}">${c.tab}</button>`).join("")
     : "";
+  $("unitField").classList.toggle("hidden", !!C.showBoth);
   document.querySelectorAll("#unit button").forEach(b => b.classList.toggle("on", b.dataset.u === state.unit));
   $("title").textContent = C.title;
 
-  const u = state.unit;
-  const unitLabel = u === "in" ? "in" : "cm";
+  const units = C.showBoth ? ["cm", "in"] : [state.unit];
   const hasEU = C.sizes.some(s => s.eu);
 
-  // search
-  let hits = [], msg = "", cls = "";
-  const q = state.q.trim();
-  if (q) {
-    const nq = norm(q);
-    C.sizes.forEach((s, i) => { if (sizeKeys(s).includes(nq)) hits.push(i); });
-    if (hits.length) {
-      msg = `Found size: ${hits.map(i => C.sizes[i].us + (C.sizes[i].eu ? " / EU " + C.sizes[i].eu : "")).join(", ")}`;
-      cls = "ok";
-    } else if (/^\d+(\.\d+)?$/.test(q)) {
-      // treat as a measurement in current unit → nearest size by key row
-      const row = C.rows.find(r => r.key === "chest") || C.rows[0];
-      const val = +q;
-      let best = 0, d = Infinity;
-      C.sizes.forEach((s, i) => { const x = Math.abs(mid(cell(row, i, u)) - val); if (x < d) { d = x; best = i; } });
-      hits = [best];
-      msg = `No size "${q}" found. Closest match by ${row.name.toLowerCase()} (${q} ${unitLabel}): ${C.sizes[best].us}${C.sizes[best].eu ? " / EU " + C.sizes[best].eu : ""}`;
-      cls = "ok";
-    } else {
-      msg = `No size "${q}" in this chart. Try another size or league.`;
-      cls = "warn";
-    }
-  }
-  const m = $("msg");
-  m.className = "msg" + (msg ? " show " + cls : "");
-  m.textContent = msg;
-
-  const hc = i => hits.length ? (hits.includes(i) ? "hit" : "dim") : "";
-
   let html = "<thead><tr><th>Size</th>";
-  C.sizes.forEach((s, i) => {
-    html += `<th class="${hc(i)}">${s.us}${s.age ? `<small>(${s.age})</small>` : ""}</th>`;
-  });
+  C.sizes.forEach(s => { html += `<th>${s.us}${s.age ? `<small>(${s.age})</small>` : ""}</th>`; });
   html += "</tr></thead><tbody>";
   if (hasEU) {
-    html += `<tr><th>EU Size</th>` + C.sizes.map((s, i) => `<td class="${hc(i)}">${s.eu || "—"}</td>`).join("") + "</tr>";
+    html += `<tr><th>EU Size</th>` + C.sizes.map(s => `<td>${s.eu || "—"}</td>`).join("") + "</tr>";
   }
-  C.rows.forEach(r => {
-    html += `<tr><th>${r.name} <small>(${unitLabel})</small></th>`;
-    C.sizes.forEach((_, i) => { html += `<td class="${hc(i)}">${show(cell(r, i, u))}</td>`; });
+  C.rows.forEach(r => units.forEach(u => {
+    html += `<tr><th>${r.name} <small>(${u})</small></th>`;
+    C.sizes.forEach((_, i) => { html += `<td>${cell(r, i, u)}</td>`; });
     html += "</tr>";
-  });
+  }));
   html += "</tbody>";
   $("table").innerHTML = html;
 
-  const notes = (C.notes || []).concat(L.id === "cap" ? [] : DEFAULT_NOTES);
+  const notes = C.notes && C.notes.length ? C.notes : DEFAULT_NOTES;
   $("notes").innerHTML = "<ul>" + notes.map(n => `<li class="${n.important ? "important" : ""}">${n.text}</li>`).join("") + "</ul>";
 }
 
@@ -371,7 +314,6 @@ $("unit").addEventListener("click", e => {
   try { localStorage.setItem("prk-size-chart", JSON.stringify({ unit: state.unit })); } catch (err) {}
   render();
 });
-$("q").addEventListener("input", e => { state.q = e.target.value; render(); });
 
 render();
 </script>
