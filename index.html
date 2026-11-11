@@ -256,8 +256,8 @@ function num(v) {
   const m = String(v).match(/^(\d+)\s+(\d+)\/(\d+)$/);
   return m ? +m[1] + m[2] / m[3] : +v;
 }
-/* converted values only: 2 decimals, trailing zeros removed */
-const conv = n => (Math.round(n * 100) / 100).toString();
+/* converted values only: 1 decimal, trailing zero removed */
+const conv = n => (Math.round(n * 10) / 10).toString();
 
 /* returns display text; source values are shown exactly as given */
 function cell(row, i, unit) {
